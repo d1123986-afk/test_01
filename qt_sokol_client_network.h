@@ -4,14 +4,21 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-#include <arpa/inet.h>
 
-#include <sys/socket.h>
-#include <netinet/tcp.h>
-#include <netdb.h>
+#ifdef _WIN32
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+    #include <windows.h>
+    #pragma comment(lib, "ws2_32.lib")
+#else
+    #include <sys/types.h>
+    #include <arpa/inet.h>
+    #include <sys/socket.h>
+    #include <netinet/tcp.h>
+    #include <netdb.h>
+    #include <unistd.h>
+#endif
 
-#include <unistd.h>
 #include <QString>
 #include <QDebug>
 
@@ -22,13 +29,22 @@
 #define USBIP_VHCI_DRV_NAME	"vhci_hcd"
 
 /* sysfs constants */
-#define SYSFS_MNT_PATH         "/sys"
-#define SYSFS_BUS_NAME         "bus"
-#define SYSFS_BUS_TYPE         "usb"
-#define SYSFS_DRIVERS_NAME     "drivers"
-
-#define SOKOL_SYSFS_PATH		256
-#define SOKOL_SYSFS_BUS_ID      32
+#ifdef _WIN32
+    #define SYSFS_MNT_PATH         ""
+    #define SOKOL_SYSFS_PATH		256
+    #define SOKOL_SYSFS_BUS_ID      32
+    /* Windows USBIP driver paths */
+    #define USBIP_VHCI_DEVICE_NAME  "USBIPVHCI"
+    #define VHCI_STATE_PATH         ""
+#else
+    #define SYSFS_MNT_PATH         "/sys"
+    #define SYSFS_BUS_NAME         "bus"
+    #define SYSFS_BUS_TYPE         "usb"
+    #define SYSFS_DRIVERS_NAME     "drivers"
+    #define SOKOL_SYSFS_PATH		256
+    #define SOKOL_SYSFS_BUS_ID      32
+    #define VHCI_STATE_PATH             "/var/run/vhci_hcd"
+#endif
 
 #define ST_OK	0x00
 #define ST_NA	0x01
@@ -135,7 +151,13 @@ class SokolNetworkClient{
         int sokolReceiveCommonReply(uint16_t *, int *);
         void sokolNetworkPackUsbDevice(int, struct sokol_usb_device *);
         int getSocket() const { return sockfd; }
-        void closeSocket() const { close(sockfd); }
+        void closeSocket() const { 
+#ifdef _WIN32
+            closesocket(sockfd); 
+#else
+            close(sockfd); 
+#endif
+        }
         static uint32_t sokolNetworkPackUint32(int pack, uint32_t num){
 
         uint32_t i;

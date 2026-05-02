@@ -1,5 +1,7 @@
 #include"qt_sokol_client_driver.h"
 
+#ifndef _WIN32
+
 SokolClientDriver::SokolClientDriver(){ qDebug() << "SokolClientDriver class constructor"; }
 
 SokolClientDriver::~SokolClientDriver(){ qDebug() << "SokolClientDriver class destructor"; }
@@ -512,3 +514,5 @@ int SokolClientDriver::write_sysfs_attribute(const char *attr_path, const char *
 
 	return 0;
 }
+
+#endif /* _WIN32 */
