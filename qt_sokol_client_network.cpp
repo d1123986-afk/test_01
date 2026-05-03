@@ -1,5 +1,12 @@
 #include "qt_sokol_client_network.h"
 
+#ifdef _WIN32
+    #include <winsock2.h>
+#else
+    #include <errno.h>
+    #include <fcntl.h>
+#endif
+
 SokolNetworkClient::SokolNetworkClient(){
 
 	sockfd = -1;
@@ -9,6 +16,9 @@ SokolNetworkClient::SokolNetworkClient(){
 SokolNetworkClient::~SokolNetworkClient(){
 
     qDebug() << "SokolNetworkClient class destructor";
+#ifdef _WIN32
+    WSACleanup();
+#endif
 }
 
 uint16_t SokolNetworkClient::sokolNetworkPackUint16(int pack, uint16_t num){
@@ -131,6 +141,15 @@ int SokolNetworkClient::sokolSendCommonRequest(uint32_t code, uint32_t status)
 }
 
 int SokolNetworkClient::_setup_tcp_connect(const char *hostname, const char *service){
+#ifdef _WIN32
+    WSADATA wsaData;
+    int ret = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (ret != 0) {
+        qDebug() << "WSAStartup failed";
+        return ret;
+    }
+#endif
+
 	struct addrinfo hints, *res, *rp;
 	int ret;
 
@@ -156,7 +175,11 @@ int SokolNetworkClient::_setup_tcp_connect(const char *hostname, const char *ser
 		if (connect(sockfd, rp->ai_addr, rp->ai_addrlen) == 0)
 			break;
 
+#ifdef _WIN32
+        closesocket(sockfd);
+#else
 		close(sockfd);
+#endif
 	}
 
 	freeaddrinfo(res);
