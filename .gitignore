@@ -1,3 +1,4 @@
+Nothing needs to be added to .gitignore since only source code files (.cpp and .h) were modified, and there are no build artifacts, dependencies, or temporary files in the changes.
 # Qt/MOC generated files
 *.moc
 *.moc.cpp
