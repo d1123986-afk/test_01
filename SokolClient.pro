@@ -15,6 +15,14 @@ win32 {
     # See: https://github.com/cezanne/usbip-win
 }
 
+# Windows-specific configuration
+win32 {
+    DEFINES += _WIN32_WINNT=0x0601
+    LIBS += -lws2_32 -lsetupapi
+    # Note: USBIP VHCI driver for Windows must be installed separately
+    # See: https://github.com/cezanne/usbip-win
+}
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
